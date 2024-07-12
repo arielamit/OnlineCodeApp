@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title><%= codeBlock.title %></title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/styles/default.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.2.0/highlight.min.js"></script>
+  <style>
+    .smiley {
+      font-size: 2rem;
+    }
+  </style>
+</head>
+<body style="width: 500px;align-content: center;text-align: -webkit-center;">
+  <div class="container">
+    <h1 style="font-family: 'Berlin Sans FB', sans-serif; text-align: -webkit-center;"><%= codeBlock.title %></h1>
+    <div class="code-container">
+      <pre><code id="codeBlock" class="javascript"><%= codeBlock.code %></code></pre>
+      <textarea id="codeEditor" style="display: inline-table;width: 500px;height: 400px;"></textarea>
+    </div>
+    <div id="smileyContainer" style="display:none;">
+      <p class="smiley">&#128512;</p>
+    </div>
+  </div>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/scripts.js"></script>
+  <script>
+    
+    const socket = io();
+    const codeBlockElement = document.getElementById('codeBlock');
+    const codeEditorElement = document.getElementById('codeEditor');
+    const roomId = '<%= id %>';
+
+    socket.emit('joinRoom', roomId);
+
+    socket.on('role', (role) => {
+      if (role === 'mentor') {
+        codeEditorElement.style.display = 'none';
+      } else {
+        codeEditorElement.style.display = 'block';
+        codeEditorElement.value = codeBlockElement.textContent;
+        codeEditorElement.addEventListener('input', () => {
+          socket.emit('codeUpdate', { roomId, code: codeEditorElement.value });
+        });
+      }
+    });
+
+    socket.on('codeUpdate', (code) => {
+      codeBlockElement.textContent = code;
+      hljs.highlightElement(codeBlockElement);
+      
+      const codeText = codeBlockElement.textContent;
+      const codeBlockTitle = '<%= codeBlock.title %>';
+      
+      if (codeBlockTitle === 'Add') {
+        if(code.includes("number1+number2")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      } 
+      else if (codeBlockTitle === 'Subtract') {
+        if(code.includes("number1-number2")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      }
+      else if (codeBlockTitle === 'Multipication') {
+        if(code.includes("number1*number2")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      }
+      else if (codeBlockTitle === 'Division') {
+        if(code.includes("number1/number2")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      }
+      else if (codeBlockTitle === 'Absolute') {
+        if(code.includes("(-1)*number")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      }
+      else if (codeBlockTitle === 'Square') {
+        if(code.includes("number*number")){
+          document.getElementById('smileyContainer').style.display = 'block';
+        }
+      }
+      else {
+        document.getElementById('smileyContainer').style.display = 'none';
+      }
+    });
+
+    hljs.highlightElement(codeBlockElement);
+
+    function showSmiley() {
+      if (codeEditorElement.style.display !== 'none') {
+        document.getElementById('smileyContainer').style.display = 'block';
+      }
+    }
+  </script>
+</body>
+</html>
